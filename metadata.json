@@ -1,0 +1,8 @@
+{
+  "name": "OdontoApp",
+  "description": "Comprehensive dental clinic assistant featuring real-time patient charts, interactive graphical odontogram mapping, appointment scheduling, and a server-side Gemini clinical co-pilot.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
