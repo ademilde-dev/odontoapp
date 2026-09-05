@@ -141,6 +141,11 @@ const mockAppointments = [
   { id: "a4", patientId: "p1", dentist: "Dr. Carlos Silva", procedureId: "pr2", date: yesterday, time: "15:00", status: "completed" }
 ];
 
+const appointmentTimes = [
+  "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+  "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"
+];
+
 const calculateAge = (dobStr: string) => {
   if (!dobStr) return 0;
   const dob = new Date(dobStr);
@@ -825,6 +830,11 @@ ${patientApps.length === 0 ? '- Nenhuma consulta programada ou realizada para es
     });
   };
 
+  const isAppointmentTimeUnavailable = (time: string) => {
+    if (!appDentist || !appDate) return false;
+    return checkScheduleConflict(editingAppointment?.id || "", appDentist, appDate, time);
+  };
+
   const handleSubmitPatient = (e: React.FormEvent) => {
     e.preventDefault();
     if (!pName.trim() || !pCpf.trim() || !pDob || !pGender || !pPhone.trim() || !pEmail.trim()) {
@@ -1093,7 +1103,7 @@ ${patientApps.length === 0 ? '- Nenhuma consulta programada ou realizada para es
             </div>
           </div>
           <div className="header-actions">
-            <button id="quick-appointment-btn" className="btn btn-primary" onClick={() => openAppointmentModal()}>
+            <button id="quick-appointment-btn" className="btn btn-primary" onClick={() => openAppointmentModal(selectedDateStr)}>
               <CalendarPlus />
               <span>Agendar Consulta</span>
             </button>
@@ -1823,7 +1833,19 @@ ${patientApps.length === 0 ? '- Nenhuma consulta programada ou realizada para es
               </div>
               <div className="form-group">
                 <label htmlFor="appointment-dentist">Dentista Responsável *</label>
-                <select id="appointment-dentist" className="form-select" required value={appDentist} onChange={(e) => setAppDentist(e.target.value)}>
+                <select
+                  id="appointment-dentist"
+                  className="form-select"
+                  required
+                  value={appDentist}
+                  onChange={(e) => {
+                    const nextDentist = e.target.value;
+                    setAppDentist(nextDentist);
+                    if (checkScheduleConflict(editingAppointment?.id || "", nextDentist, appDate, appTime)) {
+                      setAppTime("");
+                    }
+                  }}
+                >
                   <option value="">Selecione um dentista...</option>
                   <option value="Dra. Fabíola Monteiro">Dra. Fabíola Monteiro (Ortodontia & Estética)</option>
                   <option value="Dr. Carlos Silva">Dr. Carlos Silva (Clínico Geral)</option>
@@ -1844,28 +1866,33 @@ ${patientApps.length === 0 ? '- Nenhuma consulta programada ou realizada para es
               <div className="form-row">
                 <div className="form-group col">
                   <label htmlFor="appointment-date">Data da Consulta *</label>
-                  <input type="date" id="appointment-date" className="form-control" required value={appDate} onChange={(e) => setAppDate(e.target.value)} />
+                  <input
+                    type="date"
+                    id="appointment-date"
+                    className="form-control"
+                    required
+                    value={appDate}
+                    onChange={(e) => {
+                      const nextDate = e.target.value;
+                      setAppDate(nextDate);
+                      if (checkScheduleConflict(editingAppointment?.id || "", appDentist, nextDate, appTime)) {
+                        setAppTime("");
+                      }
+                    }}
+                  />
                 </div>
                 <div className="form-group col">
                   <label htmlFor="appointment-time">Horário *</label>
                   <select id="appointment-time" className="form-select" required value={appTime} onChange={(e) => setAppTime(e.target.value)}>
                     <option value="">Selecione...</option>
-                    <option value="08:00">08:00</option>
-                    <option value="08:30">08:30</option>
-                    <option value="09:00">09:00</option>
-                    <option value="09:30">09:30</option>
-                    <option value="10:00">10:00</option>
-                    <option value="10:30">10:30</option>
-                    <option value="11:00">11:00</option>
-                    <option value="11:30">11:30</option>
-                    <option value="13:30">13:30</option>
-                    <option value="14:00">14:00</option>
-                    <option value="14:30">14:30</option>
-                    <option value="15:00">15:00</option>
-                    <option value="15:30">15:30</option>
-                    <option value="16:00">16:00</option>
-                    <option value="16:30">16:30</option>
-                    <option value="17:00">17:00</option>
+                    {appointmentTimes.map(time => {
+                      const unavailable = isAppointmentTimeUnavailable(time);
+                      return (
+                        <option key={time} value={time} disabled={unavailable}>
+                          {time}{unavailable ? " (Indisponível)" : ""}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
               </div>

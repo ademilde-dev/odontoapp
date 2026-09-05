@@ -794,6 +794,11 @@ body:not(.light-mode) .form-select option {
     color: #ffffff;
 }
 
+body:not(.light-mode) .form-select option:disabled,
+body.light-mode .form-select option:disabled {
+    color: var(--text-muted);
+}
+
 /* ==========================================================================
    TABELAS DE DADOS
    ========================================================================== */
